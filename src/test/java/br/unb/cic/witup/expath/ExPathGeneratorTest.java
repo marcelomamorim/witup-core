@@ -12,8 +12,11 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExPathGeneratorTest {
@@ -55,5 +58,34 @@ class ExPathGeneratorTest {
 
         assertTrue(globalExPaths.containsKey(CIRCLE_AREA_SIGNATURE));
         assertFalse(globalExPaths.get(CIRCLE_AREA_SIGNATURE).isEmpty());
+    }
+
+    @Test
+    void generatesLocalExPathsForAllThrowingMethods() {
+        HashMap<String, SootUpPropertyGraphs> sootUpGraphs = sootUpAnalyser
+                .analyseThrowingMethods(testClassesDir.toString(), CLASS_NAME);
+
+        ExPathGenerator generator = new ExPathGenerator();
+        sootUpGraphs.forEach((signature, graphs) -> {
+            Map<WITUpNode, List<ExPath>> localExPaths = generator.generateLocalExPaths(graphs);
+            assertNotNull(localExPaths);
+            assertFalse(localExPaths.isEmpty());
+            Set<WITUpNode> throwNodes = localExPaths.keySet().stream()
+                    .filter(node -> node instanceof ThrowStatementNode)
+                    .collect(Collectors.toSet());
+            assertFalse(throwNodes.isEmpty());
+            throwNodes.forEach(node -> assertFalse(localExPaths.get(node).isEmpty()));
+        });
+    }
+
+    @Test
+    void globalExPathsContainAllThrowingMethods() {
+        HashMap<String, Map<WITUpNode, List<ExPath>>> globalExPaths = sootUpAnalyser
+                .analyseGlobalExPaths(testClassesDir.toString(), CLASS_NAME);
+
+        assertTrue(globalExPaths.containsKey(CIRCLE_AREA_SIGNATURE));
+        assertTrue(globalExPaths.containsKey("<br.unb.cic.witup.samples.Math: int invalidMethodParameter(int,int)>"));
+        assertTrue(globalExPaths.containsKey(
+                "<br.unb.cic.witup.samples.Math: int invalidMethodParameterInConjunctionExpression(int)>"));
     }
 }

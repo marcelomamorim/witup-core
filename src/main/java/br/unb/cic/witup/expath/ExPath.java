@@ -28,6 +28,14 @@ public final class ExPath {
     }
 
     @Override
+    public String toString() {
+        return nodes.stream()
+                .map(node -> node.getNode().toString())
+                .reduce((left, right) -> left + " -> " + right)
+                .orElse("");
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;

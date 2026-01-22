@@ -27,6 +27,9 @@ public class ExPathGenerator {
                 .filter(node -> cfgGraph.inDegreeOf(node) == 0)
                 .collect(Collectors.toSet());
 
+        System.out.println("Generating local expaths for method: " + graphs.getMethodSignature());
+        System.out.println("Entry nodes: " + entryNodes.size());
+
         Map<WITUpNode, List<ExPath>> pathsByThrow = new HashMap<>();
         for (WITUpNode node : cfgGraph.vertexSet()) {
             if (node instanceof ThrowStatementNode) {
@@ -39,8 +42,11 @@ public class ExPathGenerator {
                     collectPaths(cfgGraph, entry, node, currentPath, visited, paths);
                 }
                 pathsByThrow.put(node, paths);
+                System.out.println("Local expaths for throw node " + node.getNode() + ":");
+                paths.forEach(path -> System.out.println("  " + path));
             }
         }
+        System.out.println("Local expaths generated: " + pathsByThrow.size());
         return pathsByThrow;
     }
 

@@ -51,8 +51,12 @@ public final class SootUpAnalyser {
         HashMap<String, SootUpPropertyGraphs> graphs = analyseThrowingMethods(location, className);
         ExPathGenerator generator = new ExPathGenerator();
         HashMap<String, Map<WITUpNode, List<ExPath>>> globalExPaths = new HashMap<>();
-        graphs.forEach((signature, sootUpPropertyGraphs) ->
-                globalExPaths.put(signature, generator.generateLocalExPaths(sootUpPropertyGraphs)));
+        graphs.forEach((signature, sootUpPropertyGraphs) -> {
+            Map<WITUpNode, List<ExPath>> localExPaths = generator.generateLocalExPaths(sootUpPropertyGraphs);
+            globalExPaths.put(signature, localExPaths);
+            System.out.println("Global expaths for " + signature + ": " + localExPaths.size());
+        });
+        System.out.println("Global expaths generated for methods: " + globalExPaths.size());
         return globalExPaths;
     }
 
