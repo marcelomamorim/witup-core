@@ -27,4 +27,12 @@ public class SootUpPropertyGraphs {
         return cpg;
     }
 
+    public PropertyGraph getCFG() {
+        return cfg;
+    }
+
+    public String getMethodSignature() {
+        return methodSignature;
+    }
+
 }

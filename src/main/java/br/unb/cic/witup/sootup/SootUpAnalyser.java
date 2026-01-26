@@ -1,4 +1,7 @@
 package br.unb.cic.witup.sootup;
+import br.unb.cic.witup.expath.ExPath;
+import br.unb.cic.witup.expath.ExPathGenerator;
+import br.unb.cic.witup.graph.node.WITUpNode;
 import sootup.core.graph.StmtGraph;
 import sootup.core.inputlocation.AnalysisInputLocation;
 import sootup.core.jimple.common.stmt.JThrowStmt;
@@ -11,6 +14,8 @@ import sootup.java.core.types.JavaClassType;
 import sootup.java.core.views.JavaView;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,6 +42,22 @@ public final class SootUpAnalyser {
                 .orElseThrow(() -> new RuntimeException("Soot class not found: " + classType));
 
         return buildSootUpPropertyGraphs(sootClass);
+    }
+
+    public HashMap<String, Map<WITUpNode, List<ExPath>>> analyseGlobalExPaths(
+            final String location,
+            final String className
+    ) {
+        HashMap<String, SootUpPropertyGraphs> graphs = analyseThrowingMethods(location, className);
+        ExPathGenerator generator = new ExPathGenerator();
+        HashMap<String, Map<WITUpNode, List<ExPath>>> globalExPaths = new HashMap<>();
+        graphs.forEach((signature, sootUpPropertyGraphs) -> {
+            Map<WITUpNode, List<ExPath>> localExPaths = generator.generateLocalExPaths(sootUpPropertyGraphs);
+            globalExPaths.put(signature, localExPaths);
+            System.out.println("Global expaths for " + signature + ": " + localExPaths.size());
+        });
+        System.out.println("Global expaths generated for methods: " + globalExPaths.size());
+        return globalExPaths;
     }
 
     private HashMap<String, SootUpPropertyGraphs> buildSootUpPropertyGraphs(JavaSootClass sootClass) {
